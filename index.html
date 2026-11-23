@@ -1,65 +1,206 @@
-<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>TZFVL</title><style>
-body{margin:0;font-family:system-ui;background:#07080c;color:#fff;display:flex;flex-direction:column;height:100dvh;overflow:hidden;position:relative}
-.orb-wrap{position:fixed;top:45%;left:50%;transform:translate(-50%,-50%);z-index:0;pointer-events:none;display:flex;align-items:center;justify-content:center}
-.orb{width:220px;height:220px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#00f5d4,#00bbf9 45%,#7209b7 80%,transparent);filter:blur(7px);opacity:0.45;animation:breathe 4s infinite ease-in-out;transition:all 0.3s ease}
-.orb.speaking{opacity:0.95;filter:blur(3px);animation:pulseSpeak 0.4s infinite alternate;box-shadow:0 0 70px #00f5d4,0 0 120px #7209b7}
-@keyframes breathe{0%,100%{transform:scale(0.95)}50%{transform:scale(1.08)}}
-@keyframes pulseSpeak{0%{transform:scale(0.95)}100%{transform:scale(1.24)}}
-header{background:rgba(13,16,25,0.85);backdrop-filter:blur(10px);padding:10px 12px;text-align:center;border-bottom:1px solid #00f5d444;z-index:2}
-header h1{margin:0;color:#00f5d4;font-size:19px;letter-spacing:2px}header p{margin:3px 0 0;color:#94a3b8;font-size:11px}
-.top-bar{display:flex;justify-content:center;gap:6px;margin-top:6px;flex-wrap:wrap}
-.badge{background:#161d2e;border:1px solid #00f5d444;padding:5px 12px;border-radius:12px;font-size:12px;color:#00f5d4;cursor:pointer}
-#chat{flex:1;overflow-y:auto;padding:15px;display:flex;flex-direction:column;gap:10px;z-index:1}
-.msg{padding:12px 16px;border-radius:18px;max-width:84%;line-height:1.6;font-size:15px;white-space:pre-wrap;backdrop-filter:blur(6px)}
-.bot{background:rgba(20,25,38,0.88);align-self:flex-start;border:1px solid rgba(0,245,212,0.3)}
-.user{background:linear-gradient(135deg,#0077b6,#023e8a);align-self:flex-end}
-.msg img{width:100%;border-radius:12px;margin-top:8px;border:2px solid #00f5d4}
-footer{display:flex;padding:10px;background:rgba(13,16,25,0.92);backdrop-filter:blur(10px);gap:8px;z-index:2}
-input{flex:1;background:#1e2536;border:1px solid #2d3748;color:#fff;padding:12px 15px;border-radius:25px;font-size:15px;outline:none}
-button{background:#00f5d4;color:#000;border:none;padding:0 16px;border-radius:25px;font-weight:bold;cursor:pointer}
-</style></head><body onclick="unlockAudio()">
-<div class="orb-wrap"><div id="orb" class="orb"></div></div>
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>TZFVL - تيزيفالو</title>
+<style>
+  * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+  body { margin: 0; background: #0b0f19; color: #f8fafc; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+  header { background: rgba(13, 16, 25, 0.9); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; z-index: 10; }
+  header h1 { margin: 0; font-size: 18px; color: #38bdf8; }
+  .badge { font-size: 11px; background: #1e293b; padding: 4px 10px; border-radius: 12px; color: #94a3b8; border: 1px solid #334155; }
+  .icon-btn { background: none; border: none; color: #38bdf8; font-size: 20px; cursor: pointer; padding: 4px; }
+  
+  #orb-wrap { position: relative; display: flex; justify-content: center; align-items: center; padding: 18px 0 8px; }
+  #orb { width: 110px; height: 110px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #38bdf8, #3b82f6, #1d4ed8); box-shadow: 0 0 25px rgba(56, 189, 248, 0.4); transition: all 0.3s ease; animation: breathe 3.5s infinite ease-in-out; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,0.5); }
+  #orb.speaking { animation: speakPulse 0.6s infinite alternate; background: radial-gradient(circle at 30% 30%, #34d399, #10b981, #059669); box-shadow: 0 0 40px rgba(16, 185, 129, 0.8); }
+  #orb.listening { animation: listenPulse 0.8s infinite alternate; background: radial-gradient(circle at 30% 30%, #f43f5e, #e11d48, #be123c); box-shadow: 0 0 40px rgba(244, 63, 94, 0.8); }
+  @keyframes breathe { 0%, 100% { transform: scale(0.96); } 50% { transform: scale(1.04); } }
+  @keyframes speakPulse { 0% { transform: scale(0.95); } 100% { transform: scale(1.12); } }
+  @keyframes listenPulse { 0% { transform: scale(0.98); } 100% { transform: scale(1.1); } }
+
+  #status-bar { text-align: center; font-size: 12px; color: #64748b; margin-bottom: 6px; }
+  #chat { flex: 1; overflow-y: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .msg { max-width: 82%; padding: 12px 15px; border-radius: 16px; font-size: 15px; line-height: 1.5; word-wrap: break-word; }
+  .user { align-self: flex-start; background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff; border-bottom-right-radius: 4px; }
+  .bot { align-self: flex-end; background: rgba(30, 41, 59, 0.9); color: #e2e8f0; border: 1px solid #334155; border-bottom-left-radius: 4px; }
+  .msg img { max-width: 100%; border-radius: 12px; margin-top: 8px; display: block; }
+
+  #input-area { display: flex; gap: 8px; padding: 10px 12px; background: #0f172a; border-top: 1px solid #1e293b; align-items: center; }
+  #in { flex: 1; background: #1e293b; border: 1px solid #334155; color: #fff; padding: 12px 14px; border-radius: 24px; font-size: 15px; outline: none; }
+  #in::placeholder { color: #64748b; }
+  .action-btn { width: 44px; height: 44px; border-radius: 50%; border: none; background: #0284c7; color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  #mic-btn.active { background: #e11d48; animation: listenPulse 0.7s infinite alternate; }
+
+  #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 50; justify-content: center; align-items: center; padding: 20px; }
+  .modal-box { background: #1e293b; padding: 20px; border-radius: 16px; width: 100%; max-width: 360px; border: 1px solid #334155; }
+  .modal-box h3 { margin-top: 0; color: #38bdf8; }
+  .modal-box input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #fff; margin: 10px 0 16px; direction: ltr; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+  .btn-save { background: #0284c7; color: #fff; border: none; padding: 8px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+  .btn-close { background: #334155; color: #fff; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; }
+</style>
+</head>
+<body>
+
 <header>
-  <h1>TZFVL</h1>
-  <p id="mc">حماية خاصة: زهراء نبيل نعيم • الذاكرة: 0</p>
-  <div class="top-bar">
-    <span class="badge" id="batStatus">البطارية: --</span>
-    <span class="badge" onclick="testSound()">تفعيل الصوت</span>
-  </div>
+  <button class="icon-btn" onclick="openSettings()" title="الإعدادات">⚙️</button>
+  <h1>تيزيفالو - TZFVL</h1>
+  <span class="badge" id="batStatus">🔋 جاهز</span>
 </header>
+
+<div id="orb-wrap">
+  <div id="orb" onclick="toggleVoiceChat()">تحدث معي</div>
+</div>
+<div id="status-bar">حماية خاصة: زهراء نبيل نعيم • <span id="mc">الذاكرة: 0</span></div>
+
 <div id="chat"></div>
-<footer><input id="in" placeholder="اكتبي أو استخدمي ميكروفون الكيبورد..." onkeypress="if(event.key==='Enter')send()"><button onclick="send()">إرسال</button></footer>
+
+<div id="input-area">
+  <button class="action-btn" id="mic-btn" onclick="toggleMic()" title="تحدث بصوتك">🎤</button>
+  <input type="text" id="in" placeholder="اكتبي أو تحدثي يا زهراء..." onkeypress="if(event.key==='Enter') send()">
+  <button class="action-btn" onclick="send()" title="إرسال">➤</button>
+</div>
+
+<div id="modal">
+  <div class="modal-box">
+    <h3>إعدادات مفتاح الذكاء الاصطناعي</h3>
+    <p style="font-size:13px; color:#94a3b8; margin:0;">الصقي مفتاح Gemini API هنا ليعمل الذكاء والصوت:</p>
+    <input type="password" id="api-key-input" placeholder="AIzaSy...">
+    <label style="font-size:13px; display:flex; align-items:center; gap:8px; margin-bottom:15px;">
+      <input type="checkbox" id="auto-speak" checked> تفعيل الرد الصوتي التلقائي
+    </label>
+    <div class="modal-actions">
+      <button class="btn-close" onclick="closeSettings()">إغلاق</button>
+      <button class="btn-save" onclick="saveSettings()">حفظ</button>
+    </div>
+  </div>
+</div>
+
 <script>
-let mem=JSON.parse(localStorage.getItem('tz')||'[]');const chat=document.getElementById('chat');const orb=document.getElementById('orb');
-let batWarned=false,audioPlayer=new Audio(),unlocked=false;
-function up(){document.getElementById('mc').innerText='حماية خاصة: زهراء نبيل نعيم • الذاكرة: '+mem.length;localStorage.setItem('tz',JSON.stringify(mem))}
-if('getBattery' in navigator){navigator.getBattery().then(b=>{function chk(){const p=Math.round(b.level*100);document.getElementById('batStatus').innerText='البطارية: '+p+'%';if(p<=22&&!b.charging&&!batWarned){batWarned=true;add('تنبيه يا زهراء! شحن التليفون وصل '+p+' بالمئة، اشحنيه الحين!','bot')}if(b.charging||p>22)batWarned=false}chk();b.addEventListener('levelchange',chk);b.addEventListener('chargingchange',chk)})}
-function speakCloud(rawText){
-  const clean=rawText.replace(/[*#•]/g,'').trim().slice(0,180);if(!clean)return;
-  const isTr=/[a-zA-ZçğıöşüÇĞİÖŞÜ]/.test(clean)&&!/[\u0600-\u06FF]/.test(clean);
-  const lang=isTr?'tr':'ar';
-  audioPlayer.pause();
-  audioPlayer.src=`https://google.com{lang}&q=${encodeURIComponent(clean)}`;
-  audioPlayer.onplay=()=>orb.classList.add('speaking');
-  audioPlayer.onended=()=>orb.classList.remove('speaking');
-  audioPlayer.onerror=()=>{orb.classList.remove('speaking');if('speechSynthesis' in window){const u=new SpeechSynthesisUtterance(clean);u.lang=isTr?'tr-TR':'ar-SA';speechSynthesis.speak(u)}};
-  audioPlayer.play().catch(()=>{});
+const orb = document.getElementById('orb');
+const chat = document.getElementById('chat');
+const inputEl = document.getElementById('in');
+let mem = JSON.parse(localStorage.getItem('tz_mem') || '[]');
+let apiKey = localStorage.getItem('tz_key') || '';
+let autoSpeak = localStorage.getItem('tz_speak') !== 'false';
+let isContinuousVoice = false;
+
+function updateMemCount() {
+  document.getElementById('mc').innerText = 'الذاكرة: ' + mem.length;
+  localStorage.setItem('tz_mem', JSON.stringify(mem));
 }
-function unlockAudio(){if(!unlocked){unlocked=true;speakCloud('نعم يا زهراء، أنا أسمعكِ وتحت أمركِ')}}
-function testSound(){unlocked=true;add('نعم يا زهراء نبيل نعيم! صوتي مفعل الآن وتحت أمركِ.','bot')}
-function add(t,s,img){const d=document.createElement('div');d.className='msg '+s;d.innerText=t;if(img){const i=document.createElement('img');i.src=img;d.appendChild(i)}chat.appendChild(d);chat.scrollTop=chat.scrollHeight;if(s==='bot')speakCloud(t)}
-function smartLocalFallback(t){const l=t.toLowerCase();
-if(l.includes('اسمك')||l.includes('tzfvl')||l.includes('معنى'))return 'اسمي TZFVL هو سر قوتكِ يا زهراء: T لتركيا، Z لاسمكِ زهراء، F لفرنسا، V للذكاء الخارق، و L لشخصيتكِ العظيمة في المستقبل!';
-if(l.includes('من انا')||l.includes('اسمي'))return 'أنتِ مالكتي الحصرية زهراء نبيل نعيم، وكل بياناتكِ محمية بسرية تامة عندي.';
-if(l.includes('حلم'))return 'حفظت حلمكِ في ملفاتكِ السرية يا زهراء! سأربطه بأحلامكِ القادمة لنبني قصتكِ الكاملة.';
-if(l.includes('سيناريو')||l.includes('فيلم'))return 'فكرة مشهد رائعة! أخبريني بتفاصيل البطل والمشهد الأول وسأكتب لكِ الحوار فوراً.';
-return 'أنا معكِ يا زهراء! سجلت كلامكِ في ذاكرتي المحمية. اطلبي رسم فستان، تحليل موقف، أو إرسال موقعكِ!'}
-async function send(){const i=document.getElementById('in');const t=i.value.trim();if(!t)return;unlocked=true;add(t,'user');i.value='';const l=t.toLowerCase();
-if(l.includes('انس')){mem=[];up();return add('تم مسح الملف من ذاكرتي نهائياً يا زهراء!','bot')}
-if(l.includes('راسل')||l.includes('ارسل')||l.includes('رسالة')||l.includes('موقع')){add('حاضر يا زهراء! جاري تحديد موقعكِ وتجهيز الرسالة...','bot');if('geolocation' in navigator){navigator.geolocation.getCurrentPosition(p=>{const link=`https://google.com{p.coords.latitude},${p.coords.longitude}`;window.open('https://wa.me(t+'\nموقعي الحالي: '+link),'_blank');add('جهزت الرسالة مع رابط موقعكِ على الخريطة!','bot')},()=>{window.open('https://wa.me(t),'_blank')})}return}
-if(l.includes('ارسم')||l.includes('فستان')||l.includes('صمم')||l.includes('رسم')){add('من عيوني يا زهراء! جاري رسم التصميم، ثواني ويكون جاهز...','bot');const url='https://pollinations.ai(t+', fashion dress design, 8k, masterpiece')+'?width=512&height=512&nologo=true&seed='+Date.now();mem.push('رسم: '+t);up();return setTimeout(()=>add('تفضلي يا زهراء، هذا التصميم جاهز:','bot',url),1200)}
-mem.push(t);up();const ld=document.createElement('div');ld.className='msg bot';ld.innerText='جاري التحليل...';chat.appendChild(ld);
-const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),6000);
-try{const sys='أنت TZFVL الخاص بزهراء نبيل نعيم (T=تركيا، Z=زهراء، F=فرنسا، V=ذكاء، L=مستقبل زهراء). صفاتك مثل نيكو الذكي والمخلص: تحلل منطقياً وتتكلم بعفوية ودفء بشري بعيداً عن الروبوتات. تتقن العربية والتركية.';const r=await fetch('https://pollinations.ai,{signal:ctrl.signal});clearTimeout(timer);const rep=await r.text();chat.removeChild(ld);add(rep||smartLocalFallback(t),'bot')}catch(e){clearTimeout(timer);chat.removeChild(ld);add(smartLocalFallback(t),'bot')}}
-up();add('نعم يا زهراء، أنا جاهز وتحت أمركِ!','bot');
-</script></body></html>
+updateMemCount();
+
+if ('getBattery' in navigator) {
+  navigator.getBattery().then(b => {
+    const upd = () => document.getElementById('batStatus').innerText = '🔋 ' + Math.round(b.level * 100) + '%';
+    upd(); b.onlevelchange = upd;
+  });
+}
+
+function openSettings() {
+  document.getElementById('api-key-input').value = apiKey;
+  document.getElementById('auto-speak').checked = autoSpeak;
+  document.getElementById('modal').style.display = 'flex';
+}
+function closeSettings() { document.getElementById('modal').style.display = 'none'; }
+function saveSettings() {
+  apiKey = document.getElementById('api-key-input').value.trim();
+  autoSpeak = document.getElementById('auto-speak').checked;
+  localStorage.setItem('tz_key', apiKey);
+  localStorage.setItem('tz_speak', autoSpeak);
+  closeSettings();
+  addMsg('تم حفظ الإعدادات بنجاح يا زهراء! أنا مستعد للحديث.', 'bot', true);
+}
+
+function speakText(rawText) {
+  if (!autoSpeak || !('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const clean = rawText.replace(/[*#•_]/g, '').trim();
+  if (!clean) return;
+  const isTr = /[a-zA-ZçğıöşüÇĞİÖŞÜ]/.test(clean) && !/[\u0600-\u06FF]/.test(clean);
+  const u = new SpeechSynthesisUtterance(clean);
+  u.lang = isTr ? 'tr-TR' : 'ar-SA';
+  u.rate = 1.02;
+  u.onstart = () => { orb.classList.add('speaking'); orb.innerText = 'يتحدث...'; };
+  u.onend = () => {
+    orb.classList.remove('speaking');
+    orb.innerText = isContinuousVoice ? 'يستمع...' : 'تحدث معي';
+    if (isContinuousVoice) startListening();
+  };
+  u.onerror = () => { orb.classList.remove('speaking'); orb.innerText = 'تحدث معي'; };
+  window.speechSynthesis.speak(u);
+}
+
+const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+if (SpeechRec) {
+  recognition = new SpeechRec();
+  recognition.lang = 'ar-IQ';
+  recognition.interimResults = false;
+  recognition.onstart = () => {
+    orb.classList.add('listening');
+    document.getElementById('mic-btn').classList.add('active');
+    orb.innerText = 'أسمعكِ...';
+  };
+  recognition.onresult = (e) => {
+    const transcript = e.results[0][0].transcript;
+    inputEl.value = transcript;
+    send();
+  };
+  recognition.onend = () => {
+    orb.classList.remove('listening');
+    document.getElementById('mic-btn').classList.remove('active');
+    if (!orb.classList.contains('speaking')) orb.innerText = 'تحدث معي';
+  };
+}
+
+function toggleMic() {
+  if (!recognition) { alert('متصفحكِ لا يدعم الإدخال الصوتي المباشر، استخدمي ميكروفون لوحة المفاتيح.'); return; }
+  window.speechSynthesis.cancel();
+  try { recognition.start(); } catch(e) { recognition.stop(); }
+}
+
+function toggleVoiceChat() {
+  isContinuousVoice = !isContinuousVoice;
+  if (isContinuousVoice) {
+    speakText('نعم يا زهراء، وضع المحادثة الصوتية المستمرة مفعل الآن. تفضلي بالحديث.');
+  } else {
+    window.speechSynthesis.cancel();
+    if (recognition) recognition.stop();
+    orb.innerText = 'تحدث معي';
+  }
+}
+
+function addMsg(text, sender, shouldSpeak = false, imgUrl = null) {
+  const d = document.createElement('div');
+  d.className = 'msg ' + sender;
+  d.innerText = text;
+  if (imgUrl) {
+    const img = document.createElement('img');
+    img.src = imgUrl;
+    d.appendChild(img);
+  }
+  chat.appendChild(d);
+  chat.scrollTop = chat.scrollHeight;
+  if (sender === 'bot' && shouldSpeak) speakText(text);
+}
+
+async function send() {
+  const t = inputEl.value.trim();
+  if (!t) return;
+  inputEl.value = '';
+  addMsg(t, 'user');
+  const l = t.toLowerCase();
+
+  if (l.includes('انس') || l.includes('امسح الذاكرة')) {
+    mem = [];
+    updateMemCount();
+    addMsg('تم مسح الذاكرة نهائياً يا زهراء! نسيت كل شيء وبدأنا من جديد.', 'bot', true);
+    return;
+  }
+
+  if (l.includes('ارسم') || l.includes('صمم') || l.includes('فستان')) {
